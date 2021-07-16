@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/badoux/checkmail"
 )
 
 // User type
@@ -32,12 +34,19 @@ func (user *User) validate(leg string) error {
 	if user.Name == "" {
 		return errors.New("empty_name")
 	}
+
 	if user.Nick == "" {
 		return errors.New("empty_nick")
 	}
+
 	if user.Email == "" {
 		return errors.New("empty_email")
 	}
+
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		return errors.New("email_not_valid")
+	}
+
 	if leg == "create" && user.Password == "" {
 		return errors.New("empty_password")
 	}
