@@ -101,3 +101,42 @@ func (u Users) FindOne(id uint64) (models.User, error) {
 
 	return user, nil
 }
+
+// Update user by id
+func (u Users) UpdateOne(id uint64, user models.User) error {
+	statement, err := u.db.Prepare(
+		"update users set name = ?, nick = ?, email = ? where id = ?",
+	)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(
+		user.Name,
+		user.Nick,
+		user.Email,
+		id,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete user by id
+func (u Users) DeleteOne(id uint64) error {
+	statement, err := u.db.Prepare(
+		"delete from users where id = ?",
+	)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(id); err != nil {
+		return err
+	}
+
+	return nil
+}

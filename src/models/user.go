@@ -17,8 +17,8 @@ type User struct {
 }
 
 // Prepare call validate and format users methods
-func (user *User) Prepare() error {
-	if err := user.validate(); err != nil {
+func (user *User) Prepare(leg string) error {
+	if err := user.validate(leg); err != nil {
 		return err
 	}
 
@@ -28,7 +28,7 @@ func (user *User) Prepare() error {
 }
 
 // Validate if is empty field
-func (user *User) validate() error {
+func (user *User) validate(leg string) error {
 	if user.Name == "" {
 		return errors.New("empty_name")
 	}
@@ -38,7 +38,7 @@ func (user *User) validate() error {
 	if user.Email == "" {
 		return errors.New("empty_email")
 	}
-	if user.Password == "" {
+	if leg == "create" && user.Password == "" {
 		return errors.New("empty_password")
 	}
 
