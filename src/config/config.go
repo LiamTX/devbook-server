@@ -31,9 +31,10 @@ func Load() {
 		Port = 3003
 	}
 
-	DB_URI = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
+	DB_URI = fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8&parseTime=True&loc=Local",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_HOST"),
 		os.Getenv("DB_DATABASE"),
 	)
 }
