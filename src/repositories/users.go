@@ -74,3 +74,30 @@ func (u Users) FindAll(param string) ([]models.User, error) {
 
 	return users, nil
 }
+
+// Find user by id
+func (u Users) FindOne(id uint64) (models.User, error) {
+	rows, err := u.db.Query(
+		"select id, name, nick, email, createdAt from users where id = ?",
+		id,
+	)
+	if err != nil {
+		return models.User{}, err
+	}
+	defer rows.Close()
+
+	var user models.User
+	if rows.Next() {
+		if err = rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Nick,
+			&user.Email,
+			&user.CreatedAt,
+		); err != nil {
+			return models.User{}, err
+		}
+	}
+
+	return user, nil
+}

@@ -9,7 +9,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func openDataseConnection() (*repositories.Users, *sql.DB, error) {
@@ -77,9 +80,30 @@ func Find(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, users)
 }
 
-// Find user
+// Find user by id
 func FindOne(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 
+	userId, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		responses.ERR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	repository, db, err := openDataseConnection()
+	if err != nil {
+		responses.ERR(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	user, err := repository.FindOne(userId)
+	if err != nil {
+		responses.ERR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, user)
 }
 
 // Update user
@@ -87,7 +111,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Delete user
+// Delete user by id
 func Delete(w http.ResponseWriter, r *http.Request) {
 
 }
