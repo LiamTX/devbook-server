@@ -4,46 +4,51 @@ import (
 	"api/src/database"
 	"api/src/models"
 	"api/src/repositories"
+	"api/src/responses"
+	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
-func openDataseConnection() (*repositories.Users, error) {
+func openDataseConnection() (*repositories.Users, error, *sql.DB) {
 	db, err := database.Connect()
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	repository := repositories.NewUserRepository(db)
-	return repository, nil
+	return repository, nil, db
 }
 
 // Create user
 func Create(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		responses.ERR(w, http.StatusUnprocessableEntity, err)
 	}
 
 	var user models.User
 	if err = json.Unmarshal(body, &user); err != nil {
-		log.Fatal(err)
+		responses.ERR(w, http.StatusBadRequest, err)
+		return
 	}
 
-	repository, err := openDataseConnection()
+	repository, err, db := openDataseConnection()
 	if err != nil {
-		log.Fatal(err)
+		responses.ERR(w, http.StatusInternalServerError, err)
+		return
 	}
+	defer db.Close()
 
-	userId, err := repository.Create(user)
+	user.ID, err = repository.Create(user)
 	if err != nil {
-		log.Fatal(err)
+		responses.ERR(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("user id: %d", userId)))
+	responses.JSON(w, http.StatusCreated, user)
+	return
 }
 
 // Find all users
