@@ -9,16 +9,17 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
-func openDataseConnection() (*repositories.Users, error, *sql.DB) {
+func openDataseConnection() (*repositories.Users, *sql.DB, error) {
 	db, err := database.Connect()
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 
 	repository := repositories.NewUserRepository(db)
-	return repository, nil, db
+	return repository, db, nil
 }
 
 // Create user
@@ -34,7 +35,12 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repository, err, db := openDataseConnection()
+	if err = user.Prepare(); err != nil {
+		responses.ERR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	repository, db, err := openDataseConnection()
 	if err != nil {
 		responses.ERR(w, http.StatusInternalServerError, err)
 		return
@@ -51,9 +57,24 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// Find all users
+// Find all users by name/nick
 func Find(w http.ResponseWriter, r *http.Request) {
+	params := strings.ToLower(r.URL.Query().Get("user"))
 
+	repository, db, err := openDataseConnection()
+	if err != nil {
+		responses.ERR(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	users, err := repository.FindAll(params)
+	if err != nil {
+		responses.ERR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, users)
 }
 
 // Find user
