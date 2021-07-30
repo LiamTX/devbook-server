@@ -140,3 +140,21 @@ func (u Users) DeleteOne(id uint64) error {
 
 	return nil
 }
+
+// Find one user by email and returns id and password hashed
+func (u Users) FindByEmail(email string) (models.User, error) {
+	row, err := u.db.Query("select id, password from users where email = ?", email)
+	if err != nil {
+		return models.User{}, err
+	}
+	defer row.Close()
+
+	var user models.User
+	if row.Next() {
+		if err = row.Scan(&user.ID, &user.Password); err != nil {
+			return models.User{}, err
+		}
+	}
+
+	return user, nil
+}

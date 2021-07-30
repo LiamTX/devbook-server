@@ -1,11 +1,8 @@
 package controllers
 
 import (
-	"api/src/database"
 	"api/src/models"
-	"api/src/repositories"
 	"api/src/responses"
-	"database/sql"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -14,16 +11,6 @@ import (
 
 	"github.com/gorilla/mux"
 )
-
-func openDataseConnection() (*repositories.Users, *sql.DB, error) {
-	db, err := database.Connect()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	repository := repositories.NewUserRepository(db)
-	return repository, db, nil
-}
 
 // Create user
 func Create(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +30,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repository, db, err := openDataseConnection()
+	repository, db, err := OpenDataseConnection()
 	if err != nil {
 		responses.ERR(w, http.StatusInternalServerError, err)
 		return
@@ -64,7 +51,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 func Find(w http.ResponseWriter, r *http.Request) {
 	params := strings.ToLower(r.URL.Query().Get("user"))
 
-	repository, db, err := openDataseConnection()
+	repository, db, err := OpenDataseConnection()
 	if err != nil {
 		responses.ERR(w, http.StatusInternalServerError, err)
 		return
@@ -90,7 +77,7 @@ func FindOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repository, db, err := openDataseConnection()
+	repository, db, err := OpenDataseConnection()
 	if err != nil {
 		responses.ERR(w, http.StatusInternalServerError, err)
 		return
@@ -131,7 +118,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repository, db, err := openDataseConnection()
+	repository, db, err := OpenDataseConnection()
 	if err != nil {
 		responses.ERR(w, http.StatusInternalServerError, err)
 		return
@@ -157,7 +144,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repository, db, err := openDataseConnection()
+	repository, db, err := OpenDataseConnection()
 	if err != nil {
 		responses.ERR(w, http.StatusInternalServerError, err)
 		return
